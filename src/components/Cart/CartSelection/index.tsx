@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Product from '../Product';
 import Amount from '../../UI/Amount';
 import Button from '../../UI/Button';
-import './cartselection.css';
 import SliderAmount from "../../UI/SliderAmount";
 
 interface CartProps {

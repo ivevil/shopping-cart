@@ -1,5 +1,4 @@
 import React from "react";
-import './table.css'
 
 interface TableProps {
     children: React.ReactNode;

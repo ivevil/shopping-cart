@@ -3,7 +3,6 @@ import { StateInterface } from "../../../globalTypes";
 import Button from "../../UI/Button";
 import Icon from "../../UI/Icon";
 import Table from "../../UI/Table";
-import './carttable.css'
 
 interface CartTableProps {
     state: StateInterface;

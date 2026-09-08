@@ -1,5 +1,4 @@
 import React from "react";
-import './slideramount.css'
 
 interface SliderAmountProps {
     updateAmount: (arg: number) => void;

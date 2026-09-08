@@ -1,7 +1,6 @@
 import React from "react";
 import { StateInterface } from '../../../globalTypes';
 import Button from '../../UI/Button';
-import './carttotal.css'
 
 interface CartTotalProps {
     state: StateInterface;
