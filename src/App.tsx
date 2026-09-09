@@ -17,7 +17,8 @@ const App: React.FC = () => {
   const [amount, setAmount] = useState<number>(1)
   const [error, updateMessageError] = useState<string>('')
   const [modal, showModal] = useState(false);
-  const [selectedTotal, setSelectedTotal] = useState<string>('')
+  const [selectedTotal, setSelectedTotal] = useState<string>('0.00')
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   const selectProduct = (id: string) => {
     const value = id;
@@ -67,18 +68,20 @@ const App: React.FC = () => {
   }
 
   const checkIfButtonIsDisabled = () => {
-    if (product) {
-      const isItemInCart = state.shoppingCart.find(item => item.id === product.id);
-      let newAmount = 0;
-      state.shoppingCart.map(item => {
-        return newAmount += item.amount
-      })
+    if (!product) {
+      return true;
+    }
 
-      if (!isItemInCart) {
-        return state.totalAmount <= 10 && state.totalAmount + amount <= 10 ? false : true
-      } else {
-        return state.totalAmount <= 10 && newAmount - isItemInCart.amount + amount <= 10 ? false : true
-      }
+    const isItemInCart = state.shoppingCart.find(item => item.id === product.id);
+    let newAmount = 0;
+    state.shoppingCart.forEach(item => {
+      newAmount += item.amount
+    })
+
+    if (!isItemInCart) {
+      return !(state.totalAmount <= 10 && state.totalAmount + amount <= 10)
+    } else {
+      return !(state.totalAmount <= 10 && newAmount - isItemInCart.amount + amount <= 10)
     }
   }
 
@@ -93,36 +96,75 @@ const App: React.FC = () => {
     return total.toFixed(2);
   }
 
-  const calculateTotal = (price: number, amount: number) => window.setTimeout(function () { 
-    const selectedTotalPrice = (price * amount).toFixed(2) 
-    setSelectedTotal(selectedTotalPrice);
-  }, 1000)
+  useEffect(() => {
+    if (!product) {
+      setSelectedTotal('0.00');
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const selectedTotalPrice = (product.price * amount).toFixed(2);
+      setSelectedTotal(selectedTotalPrice);
+    }, 200);
+
+    return () => window.clearTimeout(timer);
+  }, [product, amount]);
 
   useEffect(() => {
-    fetch('products.json')
+    const savedTheme = window.localStorage.getItem('cart-theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    window.localStorage.setItem('cart-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    fetch('/products.json')
       .then(response => response.json())
       .then(data => dispatch({ type: "LIST_PRODUCTS", payload: data }));
   }, [])
 
-  if(product) calculateTotal(product.price, amount);
+  const cartStatus = state.totalAmount >= 10 ? 'Limit reached' : state.shoppingCart.length ? 'Ready to checkout' : 'No items yet';
+  const selectedStock = product ? Math.max(product.maxAmount - (state.shoppingCart.find(item => item.id === product.id)?.amount ?? 0), 0) : 0;
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) => currentTheme === 'light' ? 'dark' : 'light');
+  };
 
   return (
     <>
-      <Layout>
+      <Layout theme={theme} onToggleTheme={toggleTheme}>
         <h1>CART</h1>
+
+        <div className="cart__hero panel">
+          <div>
+            <span className="eyebrow">Curated essentials</span>
+            <h2>{product ? product.productName : 'Choose your item'}</h2>
+          </div>
+          <div className="cart__hero-statuses">
+            <span className={`status-pill ${state.totalAmount >= 10 ? 'danger' : 'success'}`}>{cartStatus}</span>
+            <span className="status-pill neutral">{state.shoppingCart.length} item(s)</span>
+            <span className="status-pill neutral">{selectedStock} left in stock</span>
+          </div>
+        </div>
+
         <CartSelection state={state} selectProduct={selectProduct} amount={amount} handleClick={handleClick} setAmount={setAmount} product={product} checkIfButtonIsDisabled={checkIfButtonIsDisabled()} />
         <div className="cart__products">
           <CartMessages error={error}>
-            <p>PRICE: {product !== undefined ? product.price : "0"} €</p>
-            <p>AMOUNT: {!isNaN(amount) ? amount : 'invalid number'}</p>
-            <p>TOTAL: {selectedTotal} €</p>
+            <p><span className="meta-label">PRICE</span><strong>{product !== undefined ? Number(product.price).toFixed(2) : "0.00"} €</strong></p>
+            <p><span className="meta-label">AMOUNT</span><strong>{!isNaN(amount) ? amount : 'invalid number'}</strong></p>
+            <p><span className="meta-label">TOTAL</span><strong>{selectedTotal} €</strong></p>
           </CartMessages>
           <CartTable state={state} removeTheProduct={removeTheProduct}></CartTable>
         </div>
         <CartTotal state={state} getTotal={getTotal()} clearCart={clearCart} buyItems={buyItems} />
       </Layout>
       <Modal open={modal} toggle={toggle}>
-        <h3>Yaay!!! Successfuly bought items!</h3>
+        <h3>Your order is confirmed.</h3>
       </Modal>
     </>
   )
