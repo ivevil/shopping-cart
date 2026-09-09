@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cart Challenge',
-  description: 'Shopping cart challenge built with Next.js',
+  title: 'Cart',
+  description: 'Shopping cart built with Next.js',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

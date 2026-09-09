@@ -20,15 +20,30 @@ const App: React.FC = () => {
   const [selectedTotal, setSelectedTotal] = useState<string>('0.00')
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
+  const getMaxSelectableAmount = () => {
+    if (!product) return 1;
+
+    const existingItemAmount = state.shoppingCart.find(item => item.id === product.id)?.amount ?? 0;
+    const productRemainingStock = Math.max(product.maxAmount - existingItemAmount, 0);
+    const cartRemainingSlots = Math.max(10 - (state.totalAmount - existingItemAmount), 0);
+
+    return Math.max(1, Math.min(productRemainingStock, cartRemainingSlots || 1));
+  };
+
   const selectProduct = (id: string) => {
     const value = id;
 
     if (value !== undefined && value !== "0") {
+      const selectedProduct = state?.products.find(
+        product => product.id === value
+      ) as ProductInterface;
+
       dispatch({
-        type: "SELECT_A_PRODUCT", payload: product, select: state?.products.find(
-          product => product.id === value
-        ) as ProductInterface
-      })
+        type: "SELECT_A_PRODUCT",
+        payload: product,
+        select: selectedProduct
+      });
+      setAmount(1);
     }
   }
 
@@ -37,14 +52,19 @@ const App: React.FC = () => {
   ) as ProductInterface
 
   const handleClick = () => {
-    if (isNaN(amount) || amount === 0) {
+    const allowedAmount = getMaxSelectableAmount();
+    const safeAmount = Math.min(Math.max(1, Number(amount) || 1), allowedAmount);
+    const normalizedAmount = Number.isFinite(safeAmount) ? safeAmount : 1;
+
+    if (isNaN(normalizedAmount) || normalizedAmount <= 0) {
       updateMessageError("Sorry, you need to select valid number as an amount!");
     } else if (product === undefined) {
       updateMessageError("Sorry, you need to pick a product!");
-    } else if (amount > product.maxAmount) {
-      updateMessageError("Sorry, there is no enough items. There is/are only " + product.maxAmount + " available!");
+    } else if (normalizedAmount > getMaxSelectableAmount()) {
+      updateMessageError("Sorry, there is no enough items. There is/are only " + getMaxSelectableAmount() + " available!");
     } else {
-      product.amount = amount;
+      setAmount(normalizedAmount);
+      product.amount = normalizedAmount;
       dispatch({ type: "ADD_TO_CART", payload: product })
       updateMessageError("");
     }
@@ -102,13 +122,18 @@ const App: React.FC = () => {
       return;
     }
 
+    const maxSelectableAmount = getMaxSelectableAmount();
+    if (amount < 1 || amount > maxSelectableAmount) {
+      setAmount(Math.min(Math.max(1, amount), maxSelectableAmount));
+    }
+
     const timer = window.setTimeout(() => {
       const selectedTotalPrice = (product.price * amount).toFixed(2);
       setSelectedTotal(selectedTotalPrice);
     }, 200);
 
     return () => window.clearTimeout(timer);
-  }, [product, amount]);
+  }, [product, amount, state.shoppingCart, state.totalAmount]);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('cart-theme');
@@ -130,6 +155,7 @@ const App: React.FC = () => {
 
   const cartStatus = state.totalAmount >= 10 ? 'Limit reached' : state.shoppingCart.length ? 'Ready to checkout' : 'No items yet';
   const selectedStock = product ? Math.max(product.maxAmount - (state.shoppingCart.find(item => item.id === product.id)?.amount ?? 0), 0) : 0;
+  const maxSelectableAmount = getMaxSelectableAmount();
 
   const toggleTheme = () => {
     setTheme((currentTheme) => currentTheme === 'light' ? 'dark' : 'light');
@@ -152,7 +178,16 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <CartSelection state={state} selectProduct={selectProduct} amount={amount} handleClick={handleClick} setAmount={setAmount} product={product} checkIfButtonIsDisabled={checkIfButtonIsDisabled()} />
+        <CartSelection
+          state={state}
+          selectProduct={selectProduct}
+          amount={amount}
+          handleClick={handleClick}
+          setAmount={setAmount}
+          product={product}
+          maxAmount={maxSelectableAmount}
+          checkIfButtonIsDisabled={checkIfButtonIsDisabled()}
+        />
         <div className="cart__products">
           <CartMessages error={error}>
             <p><span className="meta-label">PRICE</span><strong>{product !== undefined ? Number(product.price).toFixed(2) : "0.00"} €</strong></p>

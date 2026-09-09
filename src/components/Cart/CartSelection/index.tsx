@@ -1,8 +1,6 @@
 import React from "react";
 import { StateInterface, ProductInterface } from "../../../globalTypes";
-import { useState, useEffect } from 'react';
 import Product from '../Product';
-import Amount from '../../UI/Amount';
 import Button from '../../UI/Button';
 import SliderAmount from "../../UI/SliderAmount";
 
@@ -13,22 +11,18 @@ interface CartProps {
     amount: number;
     setAmount: (arg: number) => void;
     product: ProductInterface;
+    maxAmount: number;
     checkIfButtonIsDisabled: boolean | undefined;
 }
 
-const CartSelection: React.FC<CartProps> = ({ state, selectProduct, amount, handleClick, setAmount, product, checkIfButtonIsDisabled }) => {
-
-    const [selectedAmount, setSelectedAmount] = useState<number>(1)
-    useEffect(() => {
-        setSelectedAmount(amount)
-      },[amount])
+const CartSelection: React.FC<CartProps> = ({ state, selectProduct, amount, handleClick, setAmount, product, maxAmount, checkIfButtonIsDisabled }) => {
 
     return (
         <>
             <div className="cart__selection">
                 {
                     state.products.length ? (
-                        <select onChange={(
+                        <select aria-label="Select a product" onChange={(
                             ev: React.ChangeEvent<HTMLSelectElement>,
                         ): void => selectProduct(ev.target.value)}>
                             <option value="0">-Select a product-</option>
@@ -48,8 +42,7 @@ const CartSelection: React.FC<CartProps> = ({ state, selectProduct, amount, hand
                         <h2>Loading...</h2>
                     )
                 }
-                <SliderAmount selectedAmount={selectedAmount} updateAmount={setAmount} />
-                <Amount selectedAmount={selectedAmount} updateAmount={setAmount} product={product} />
+                <SliderAmount selectedAmount={amount} updateAmount={setAmount} max={maxAmount} />
                 <Button onClick={handleClick} disabled={checkIfButtonIsDisabled} buttonClass={"primary"}>
                     ADD
                 </Button>
