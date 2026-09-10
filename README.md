@@ -1,62 +1,66 @@
-## The project
-A shopping cart built with React and Typescript.
+# Shopping Cart
 
-## RUN:
-````
+A modern shopping cart built with Next.js, React, and TypeScript. The app supports product selection, quantity controls, cart totals, stock validation, theme switching, and a polished accessible UI.
+
+## Stack
+
+- Next.js 14
+- React 18
+- TypeScript
+- CSS variables for theme support
+
+## Run locally
+
+```bash
 npm install
-npm start
-````
-or with dockerized container:
-````
-npm or yarn install
-docker-compose -f docker-compose.dev.yml up
-````
-Now open the app at http://localhost:3000
+npm run dev
+```
 
+Then open:
 
-## LINT:
-````
-eslint src/**/*.tsx
-````
+```text
+http://localhost:3000
+```
 
-## TBD: run unit tests
-`npm run test`
+## Production build
 
-## TBD: run e2e tests
-`npm run test:e2e`
+```bash
+npm run build
+```
 
-## Project screenshot
-![ScreenShot](https://raw.github.com/ivevil/shopping-cart/main/screenshot.png)
+## Features
 
-## FINISHED TASKS
+- Product selection from a dropdown list
+- Product prices displayed in the selection list
+- Quantity controls with a compact stepper instead of a full-width slider
+- Max-stock and cart-limit validation
+- Real-time total preview for the selected item
+- Shopping cart summary with unit price, item count, and total
+- Remove single items or clear the entire cart
+- Order confirmation modal
+- Light and dark theme switcher
+- Accessible contrast and focus states
+- Responsive layout
 
-* As a customer I want to be able to select products from the drop down list.
+## UX behavior
 
-* As a customer I would like to be able to see the prices in the drop down list.
+- Quantity is clamped to the active product stock and cart limit
+- Picking a new product resets the quantity to 1
+- The total updates after a small delay for a smoother feel
+- The add-to-cart button is blocked when the selected quantity would exceed rules
 
-* As a customer I would like to be able to determine the quantity of the product before I add it to the shopping cart.
+## Notes
 
-* As a customer I would like to be informed when I exceed the maximum number of products and be prevented from entering more than this number
+- The project uses the App Router in Next.js
+- `.next` output is intentionally ignored in Git
+- Use a fresh Next.js cache when rebuilding after stale errors:
 
-* As a customer I would like to see the total for the selected product before I add it to the shopping cart
+```bash
+rm -rf .next
+npm run build
+```
 
-* As a customer I want to be able to see all my products in the shopping cart
+## Project status
 
-* As a customer I want to be able to see the total of the shopping cart at any time
-
-* As a customer I want to be able to remove products from the shopping cart
-
-* As a customer I would like to be able to delete the entire shopping cart at once
-
-* As a customer I want to be able to see how many shopping cart items I can add (max 10 items, not product amount combined)
-
-* As a customer I would like to be informed when I have reached the limit
-
-* As a customer I want to see a graphical overlay when I confirm the purchase to know that my order was successful
-
-* As a customer I want to be able to select the quantity of products with a slider
-
-* As a customer I want to be able to see the quantity selected with the slider also in the input field
-
-* As a customer I want to see the new total for the selected quantity only after a few milliseconds
+This version reflects the latest UI refresh and accessibility improvements, including the final compact quantity selector treatment.
 
